@@ -103,6 +103,16 @@ impl<F: PrimeField> Absorbable<F> for [u8] {
     }
 }
 
+impl<F: PrimeField> Absorbable<F> for &[u8] {
+    fn to_sponge_bytes(&self) -> Vec<u8> {
+        self.to_vec()
+    }
+
+    fn to_sponge_field_elements(&self) -> Vec<F> {
+        self.to_field_elements().unwrap()
+    }
+}
+
 macro_rules! impl_absorbable_field {
     ($field:ident, $params:ident) => {
         impl<P: $params> Absorbable<$field<P>> for $field<P> {
@@ -249,8 +259,8 @@ impl<F: PrimeField, A: Absorbable<F>> Absorbable<F> for Option<A> {
 /// Format is `absorb_all!(s; a_0, a_1, ..., a_n)`, where `s` is a mutable reference to a sponge
 /// and `a_n` implements Absorbable.
 #[macro_export]
-macro_rules! absorb_all {
-    ($sponge:expr; $($absorbable:expr),+ ) => {
+macro_rules! absorb {
+    ($sponge:expr, $($absorbable:expr),+ ) => {
         $(
             CryptographicSponge::absorb($sponge, $absorbable);
         )+
@@ -273,4 +283,18 @@ mod test {
         let b = output.pop().unwrap();
         let bytes = to_bytes!(b).unwrap();
     }
+
+    pub fn test<F: PrimeField>(sponge: &mut impl CryptographicSponge<F>) {
+
+    }
+
+    pub fn only_absorb_test<F: PrimeField, S: CryptographicSponge<F>>(iterations: usize) {
+        let sponge = S::new();
+        let rng = rand::thread_rng();
+    }
+
+    pub fn only_squeeze_test<F: PrimeField>(sponge: &mut impl CryptographicSponge<F>) {
+
+    }
+
 }
